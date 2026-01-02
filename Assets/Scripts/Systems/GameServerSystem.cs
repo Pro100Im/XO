@@ -24,8 +24,31 @@ partial struct GameServerSystem : ISystem
         var entitiesReferences = SystemAPI.GetSingleton<EntitiesReferencesComponent>();
         var entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
 
+        {
+            var gameServerData = SystemAPI.GetSingletonRW<GameServerDataCmponent>();
+
+            if (gameServerData.ValueRO.CurrentPlayablePlayerType == PlayerType.None)
+            {
+                gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Cross;
+            }
+        }
+
         foreach (var (clickOnGridPosRPC, receiveRpcCommandRequest, entity) in SystemAPI.Query<RefRO<ClickOnGridPosRPC>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
         {
+            var gameServerData = SystemAPI.GetSingletonRW<GameServerDataCmponent>();
+
+            if(gameServerData.ValueRO.CurrentPlayablePlayerType != clickOnGridPosRPC.ValueRO.PlayerType)
+            {
+                entityCommandBuffer.DestroyEntity(entity);
+
+                continue;
+            }
+
+            if(gameServerData.ValueRO.CurrentPlayablePlayerType == PlayerType.Cross)
+                gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Circle;
+            else
+                gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Cross;
+
             var playerPrefab = clickOnGridPosRPC.ValueRO.PlayerType == PlayerType.Circle
                 ? entitiesReferences.CirclePrefabEntity
                 : entitiesReferences.CrossPrefabEntity;
