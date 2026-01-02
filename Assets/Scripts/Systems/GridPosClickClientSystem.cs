@@ -1,6 +1,5 @@
 using Components;
 using RPCs;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -35,16 +34,15 @@ namespace Systems
 
                 if (SystemAPI.HasComponent<GridPosComponent>(raycastHit.Entity))
                 {
+                    var gameClientData = SystemAPI.GetSingleton<GameClientData>();
                     var gridPos = SystemAPI.GetComponent<GridPosComponent>(raycastHit.Entity);
-
-                    Debug.Log($"gridPos {gridPos.X} {gridPos.Y}");
-
                     var rpcEntity = state.EntityManager.CreateEntity(typeof(ClickOnGridPosRPC), typeof(SendRpcCommandRequest));
 
                     state.EntityManager.SetComponentData(rpcEntity, new ClickOnGridPosRPC
                     {
                         X = gridPos.X,
-                        Y = gridPos.Y
+                        Y = gridPos.Y,
+                        PlayerType = gameClientData.PlayerType
                     });
                 }
             }

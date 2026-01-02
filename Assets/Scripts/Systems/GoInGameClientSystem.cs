@@ -1,3 +1,4 @@
+using Components;
 using RPCs;
 using Unity.Burst;
 using Unity.Collections;
@@ -35,7 +36,8 @@ namespace Systems
                 entityCommandBuffer.AddComponent<GoInGameRequestRPC>(rpcEntity);
                 entityCommandBuffer.AddComponent<SendRpcCommandRequest>(rpcEntity);
 
-                Debug.Log($"Connected :: entity ={entity.Index} :: networkId = {networkId.ValueRO.Value}");
+                var gameClientData = SystemAPI.GetSingletonRW<GameClientData>();
+                gameClientData.ValueRW.PlayerType = (networkId.ValueRO.Value == 1) ? PlayerType.Cross : PlayerType.Circle;
             }
 
             entityCommandBuffer.Playback(state.EntityManager);

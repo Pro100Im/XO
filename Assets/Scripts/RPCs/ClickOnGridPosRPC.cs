@@ -6,5 +6,6 @@ namespace RPCs
     {
         public int X;
         public int Y;
+        public PlayerType PlayerType;
     }
 }

@@ -26,7 +26,10 @@ partial struct GameServerSystem : ISystem
 
         foreach (var (clickOnGridPosRPC, receiveRpcCommandRequest, entity) in SystemAPI.Query<RefRO<ClickOnGridPosRPC>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
         {
-            var playerObjectEntity = entityCommandBuffer.Instantiate(entitiesReferences.CrossPrefabEntity);
+            var playerPrefab = clickOnGridPosRPC.ValueRO.PlayerType == PlayerType.Circle
+                ? entitiesReferences.CirclePrefabEntity
+                : entitiesReferences.CrossPrefabEntity;
+            var playerObjectEntity = entityCommandBuffer.Instantiate(playerPrefab);
             var worldPos = GetPositionFromGridPos(clickOnGridPosRPC.ValueRO.X, clickOnGridPosRPC.ValueRO.Y);
 
             entityCommandBuffer.SetComponent(playerObjectEntity, LocalTransform.FromPosition(worldPos));
