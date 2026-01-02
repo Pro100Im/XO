@@ -36,8 +36,8 @@ namespace Systems
                 entityCommandBuffer.AddComponent<GoInGameRequestRPC>(rpcEntity);
                 entityCommandBuffer.AddComponent<SendRpcCommandRequest>(rpcEntity);
 
-                var gameClientData = SystemAPI.GetSingletonRW<GameClientData>();
-                gameClientData.ValueRW.PlayerType = (networkId.ValueRO.Value == 1) ? PlayerType.Cross : PlayerType.Circle;
+                var onConnectedEventEntity = entityCommandBuffer.CreateEntity();
+                entityCommandBuffer.AddComponent(onConnectedEventEntity, new OnConnectedEvent { ConnectionId = networkId.ValueRO.Value });
             }
 
             entityCommandBuffer.Playback(state.EntityManager);
