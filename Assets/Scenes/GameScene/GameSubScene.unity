@@ -548,6 +548,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Components.EntitiesReferencesAuthoring
   CrossPrefab: {fileID: 6081404660802670161, guid: 8f48b3b04afaecc43a75cfc368532a17, type: 3}
   CirclePrefab: {fileID: 6081404660802670161, guid: 04197f25dfd0e4348bc0530576cb951d, type: 3}
+  LineWinnerPrefab: {fileID: 225305843440164251, guid: 9e20d37d56272ee47839cec9ecf2f1a3, type: 3}
 --- !u!4 &792976717
 Transform:
   m_ObjectHideFlags: 0

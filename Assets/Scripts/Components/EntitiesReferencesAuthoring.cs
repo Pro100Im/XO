@@ -7,6 +7,7 @@ namespace Components
     {
         public GameObject CrossPrefab;
         public GameObject CirclePrefab;
+        public GameObject LineWinnerPrefab;
 
         public class Baker : Baker<EntitiesReferencesAuthoring>
         {
@@ -17,7 +18,8 @@ namespace Components
                 AddComponent(entity, new EntitiesReferencesComponent
                 {
                     CrossPrefabEntity = GetEntity(authoring.CrossPrefab, TransformUsageFlags.Dynamic),
-                    CirclePrefabEntity = GetEntity(authoring.CirclePrefab, TransformUsageFlags.Dynamic)
+                    CirclePrefabEntity = GetEntity(authoring.CirclePrefab, TransformUsageFlags.Dynamic),
+                    LineWinnerPrefabEntity = GetEntity(authoring.LineWinnerPrefab, TransformUsageFlags.Dynamic)
                 });
             }
         }
@@ -27,5 +29,6 @@ namespace Components
     {
         public Entity CrossPrefabEntity;
         public Entity CirclePrefabEntity;
+        public Entity LineWinnerPrefabEntity;
     }
 }
