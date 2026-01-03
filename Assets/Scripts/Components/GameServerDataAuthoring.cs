@@ -1,4 +1,6 @@
+using Unity.Collections;
 using Unity.Entities;
+using Unity.NetCode;
 using UnityEngine;
 
 namespace Components
@@ -19,7 +21,13 @@ namespace Components
     public struct GameServerDataCmponent : IComponentData
     {
         public GameState CurrentGameState;
-        public PlayerType CurrentPlayablePlayerType;
+
+        [GhostField] public PlayerType CurrentPlayablePlayerType;
+    }
+
+    public struct GameServerDataArraysCmponent : IComponentData
+    {
+        public NativeArray<PlayerType> PlayerTypeArray;
     }
 
     public enum GameState

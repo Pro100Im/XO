@@ -16,7 +16,7 @@ namespace Systems
 
             foreach (var onConnectedEvent in SystemAPI.Query<OnConnectedEvent>())
             {
-                var gameClientData = SystemAPI.GetSingletonRW<GameClientData>();
+                var gameClientData = SystemAPI.GetSingletonRW<GameClientDataComponent>();
 
                 gameClientData.ValueRW.PlayerType = (onConnectedEvent.ConnectionId == 1) ? PlayerType.Cross : PlayerType.Circle;
             }

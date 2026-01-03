@@ -34,7 +34,7 @@ namespace Systems
 
                 if (SystemAPI.HasComponent<GridPosComponent>(raycastHit.Entity))
                 {
-                    var gameClientData = SystemAPI.GetSingleton<GameClientData>();
+                    var gameClientData = SystemAPI.GetSingleton<GameClientDataComponent>();
                     var gridPos = SystemAPI.GetComponent<GridPosComponent>(raycastHit.Entity);
                     var rpcEntity = state.EntityManager.CreateEntity(typeof(ClickOnGridPosRPC), typeof(SendRpcCommandRequest));
 

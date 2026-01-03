@@ -12,11 +12,13 @@ using UnityEngine;
 partial struct GameServerSystem : ISystem
 {
     private const float GridStep = 3.1f;
+    private const int   GridWidthHeight = 3;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<EntitiesReferencesComponent>();
+        state.RequireForUpdate<GameServerDataCmponent>();
     }
 
     public void OnUpdate(ref SystemState state)
@@ -28,10 +30,15 @@ partial struct GameServerSystem : ISystem
 
         if (gameServerData.ValueRO.CurrentGameState == GameState.WaitingForPlayers && networkStreamInGameQuery.CalculateEntityCount() == 2)
         {
-            Debug.Log("Both players connected. Starting the game...");
-
             gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Cross;
             gameServerData.ValueRW.CurrentGameState = GameState.GameInProgress;
+
+            var gameServerDataEntity = SystemAPI.GetSingletonEntity<GameServerDataCmponent>();
+
+            state.EntityManager.AddComponentData(gameServerDataEntity, new GameServerDataArraysCmponent
+            {
+                PlayerTypeArray = new NativeArray<PlayerType>(GridWidthHeight * GridWidthHeight, Allocator.Persistent)
+            });
 
             state.EntityManager.CreateEntity(typeof(GameStartedRPC), typeof(SendRpcCommandRequest));
         }
@@ -44,6 +51,18 @@ partial struct GameServerSystem : ISystem
 
                 continue;
             }
+
+            var gameServerDataArrays = SystemAPI.GetSingletonRW<GameServerDataArraysCmponent>();
+
+            if(gameServerDataArrays.ValueRO.PlayerTypeArray[GetFlatGridIndex(clickOnGridPosRPC.ValueRO.X, clickOnGridPosRPC.ValueRO.Y)] != PlayerType.None)
+            {
+                entityCommandBuffer.DestroyEntity(entity);
+
+                continue;
+            }
+
+            gameServerDataArrays.ValueRW.PlayerTypeArray[GetFlatGridIndex(clickOnGridPosRPC.ValueRO.X, clickOnGridPosRPC.ValueRO.Y)] = clickOnGridPosRPC.ValueRO.PlayerType;
+
 
             if (gameServerData.ValueRO.CurrentPlayablePlayerType == PlayerType.Cross)
                 gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Circle;
@@ -66,5 +85,21 @@ partial struct GameServerSystem : ISystem
     private float3 GetPositionFromGridPos(int x, int y)
     {
         return new float3(-GridStep + x * GridStep, -GridStep + y * GridStep, 0);
+    }
+
+    private int GetFlatGridIndex(int x, int y)
+    {
+        return x + y * GridWidthHeight;
+    }
+
+    [BurstCompile]
+    public void OnDestroy(ref SystemState state)
+    {
+        if(SystemAPI.HasSingleton<GameServerDataArraysCmponent>())
+        {
+            var gameServerDataArrays = SystemAPI.GetSingleton<GameServerDataArraysCmponent>();
+
+            gameServerDataArrays.PlayerTypeArray.Dispose();
+        }
     }
 }

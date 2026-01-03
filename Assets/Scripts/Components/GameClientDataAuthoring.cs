@@ -11,12 +11,12 @@ namespace Components
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
 
-                AddComponent(entity, new GameClientData());
+                AddComponent(entity, new GameClientDataComponent());
             }
         }
     }
 
-    public struct GameClientData : IComponentData
+    public struct GameClientDataComponent : IComponentData
     {
         public PlayerType PlayerType;
     }

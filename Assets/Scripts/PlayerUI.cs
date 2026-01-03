@@ -24,11 +24,16 @@ public class PlayerUI : MonoBehaviour
         DotsEventsMono.Instance.OnGameStartedEvent += DotsEventsMono_OnGameStartedEvent;
     }
 
+    private void Update()
+    {
+        UpdateCurrentPlayableArrow();
+    }
+
     private void DotsEventsMono_OnGameStartedEvent(object sender, EventArgs e)
     {
         var entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
-        var entityQuery = entityManager.CreateEntityQuery(typeof(GameClientData));
-        var gameClientData = entityQuery.GetSingleton<GameClientData>();
+        var entityQuery = entityManager.CreateEntityQuery(typeof(GameClientDataComponent));
+        var gameClientData = entityQuery.GetSingleton<GameClientDataComponent>();
 
         if(gameClientData.PlayerType == PlayerType.Cross)
         {
@@ -37,6 +42,28 @@ public class PlayerUI : MonoBehaviour
         else
         {
             circleYou.SetActive(true); 
+        }
+    }
+
+    private void UpdateCurrentPlayableArrow() 
+    {
+        var entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
+        var entityQuery = entityManager.CreateEntityQuery(typeof(GameServerDataCmponent));
+
+        if(!entityQuery.HasSingleton<GameServerDataCmponent>())
+                return;
+
+        var gameServerData = entityQuery.GetSingleton<GameServerDataCmponent>();
+
+        if (gameServerData.CurrentPlayablePlayerType == PlayerType.Cross)
+        {
+            circleArrow.SetActive(false);
+            crossArrow.SetActive(true);
+        }
+        else
+        {
+            crossArrow.SetActive(false);
+            circleArrow.SetActive(true);
         }
     }
 }
