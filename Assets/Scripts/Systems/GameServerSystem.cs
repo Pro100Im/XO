@@ -6,6 +6,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine;
 
 [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
 partial struct GameServerSystem : ISystem
@@ -18,33 +19,33 @@ partial struct GameServerSystem : ISystem
         state.RequireForUpdate<EntitiesReferencesComponent>();
     }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         var entitiesReferences = SystemAPI.GetSingleton<EntitiesReferencesComponent>();
         var entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
+        var networkStreamInGameQuery = state.EntityManager.CreateEntityQuery(typeof(NetworkStreamInGame));
+        var gameServerData = SystemAPI.GetSingletonRW<GameServerDataCmponent>();
 
+        if (gameServerData.ValueRO.CurrentGameState == GameState.WaitingForPlayers && networkStreamInGameQuery.CalculateEntityCount() == 2)
         {
-            var gameServerData = SystemAPI.GetSingletonRW<GameServerDataCmponent>();
+            Debug.Log("Both players connected. Starting the game...");
 
-            if (gameServerData.ValueRO.CurrentPlayablePlayerType == PlayerType.None)
-            {
-                gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Cross;
-            }
+            gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Cross;
+            gameServerData.ValueRW.CurrentGameState = GameState.GameInProgress;
+
+            state.EntityManager.CreateEntity(typeof(GameStartedRPC), typeof(SendRpcCommandRequest));
         }
 
         foreach (var (clickOnGridPosRPC, receiveRpcCommandRequest, entity) in SystemAPI.Query<RefRO<ClickOnGridPosRPC>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
         {
-            var gameServerData = SystemAPI.GetSingletonRW<GameServerDataCmponent>();
-
-            if(gameServerData.ValueRO.CurrentPlayablePlayerType != clickOnGridPosRPC.ValueRO.PlayerType)
+            if (gameServerData.ValueRO.CurrentPlayablePlayerType != clickOnGridPosRPC.ValueRO.PlayerType)
             {
                 entityCommandBuffer.DestroyEntity(entity);
 
                 continue;
             }
 
-            if(gameServerData.ValueRO.CurrentPlayablePlayerType == PlayerType.Cross)
+            if (gameServerData.ValueRO.CurrentPlayablePlayerType == PlayerType.Cross)
                 gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Circle;
             else
                 gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Cross;

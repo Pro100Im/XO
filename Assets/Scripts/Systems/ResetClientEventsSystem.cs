@@ -7,13 +7,15 @@ namespace Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     partial struct ResetClientEventsSystem : ISystem
     {
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var entityCommandBuffer = new EntityCommandBuffer(Unity.Collections.Allocator.Temp);
 
-            foreach (var (onConnectedEvent, entity) in SystemAPI.Query<OnConnectedEvent>().WithEntityAccess())
+            foreach (var (onConnectedEvent, entity) in SystemAPI.Query<RefRO<OnConnectedEvent>>().WithEntityAccess())
             {
+                DotsEventsMono.Instance.RaiseOnClientConnectedEvent(onConnectedEvent.ValueRO.ConnectionId);
+
                 entityCommandBuffer.DestroyEntity(entity);
             }
 
