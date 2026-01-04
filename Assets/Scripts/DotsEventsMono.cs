@@ -8,6 +8,8 @@ public class DotsEventsMono : MonoBehaviour
     public event EventHandler<OnClientConnectedEventArgs> OnClientConnectedEvent;
     public event EventHandler OnGameStartedEvent;
     public event EventHandler<OnWinnerEventArgs> OnGameWinEvent;
+    public event EventHandler OnGameRematchEvent;
+    public event EventHandler OnGameTieEvent;
 
     private void Awake()
     {
@@ -52,8 +54,16 @@ public class DotsEventsMono : MonoBehaviour
 
     public void RaiseOnGameStartedEvent()
     {
-        Debug.Log("Raising OnGameStartedEvent");
-
         OnGameStartedEvent?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RaiseOnGameRematchEvent()
+    {
+        OnGameRematchEvent?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RaiseOnGameTieEvent()
+    {
+        OnGameTieEvent?.Invoke(this, EventArgs.Empty);
     }
 }

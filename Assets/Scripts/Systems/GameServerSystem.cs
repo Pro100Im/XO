@@ -146,6 +146,29 @@ partial struct GameServerSystem : ISystem
             CheckForWinner(gameServerDataArrays.ValueRO, gameServerData, entityCommandBuffer, entitiesReferences);
         }
 
+        foreach (var (rematchRPC, entity) in SystemAPI.Query<RefRO<RematchRPC>>().WithEntityAccess())
+        {
+            var gameServerDataArrays = SystemAPI.GetSingletonRW<GameServerDataArraysCmponent>();
+
+            for (int i = 0; i < gameServerDataArrays.ValueRO.PlayerTypeArray.Length; i++)
+            {
+                gameServerDataArrays.ValueRW.PlayerTypeArray[i] = PlayerType.None;
+            }
+
+            gameServerData.ValueRW.CurrentPlayablePlayerType = PlayerType.Cross;
+
+            foreach (var (spawnedObjectComponent, spawnedEntity) in SystemAPI.Query<SpawnObjectComponent>().WithEntityAccess())
+            {
+                entityCommandBuffer.DestroyEntity(spawnedEntity);
+            }
+
+            var rematchRPCEntity = entityCommandBuffer.CreateEntity();
+
+            entityCommandBuffer.DestroyEntity(entity);
+            entityCommandBuffer.AddComponent(rematchRPCEntity, typeof(RematchRPC));
+            entityCommandBuffer.AddComponent(rematchRPCEntity, typeof(SendRpcCommandRequest));
+        }
+
         entityCommandBuffer.Playback(state.EntityManager);
     }
 
@@ -202,7 +225,29 @@ partial struct GameServerSystem : ISystem
                 entityCommandBuffer.AddComponent(gameWinRPC, new GameWinRPC { Winner = data.PlayerTypeArray[GetFlatGridIndex(line.First.x, line.First.y)] });
                 entityCommandBuffer.AddComponent(gameWinRPC, new SendRpcCommandRequest());
                 entityCommandBuffer.SetComponent(entityLineWinner, LocalTransform.FromPositionRotation(wordlPos, quaternion.RotateZ(eluerZ * math.TORADIANS)));
+
+                return;
             }
+        }
+
+        var hasTie = true;
+
+        for (int i = 0; i < data.PlayerTypeArray.Length; i++)
+        {
+            if (data.PlayerTypeArray[i] == PlayerType.None)
+            {
+                hasTie = false;
+
+                break;
+            }
+        }
+
+        if (hasTie)
+        {
+            var gameTieRPC = entityCommandBuffer.CreateEntity();
+
+            entityCommandBuffer.AddComponent(gameTieRPC, new GameTieRPC());
+            entityCommandBuffer.AddComponent(gameTieRPC, new SendRpcCommandRequest());
         }
     }
 
