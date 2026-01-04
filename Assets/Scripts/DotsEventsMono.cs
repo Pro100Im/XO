@@ -7,6 +7,7 @@ public class DotsEventsMono : MonoBehaviour
 
     public event EventHandler<OnClientConnectedEventArgs> OnClientConnectedEvent;
     public event EventHandler OnGameStartedEvent;
+    public event EventHandler<OnWinnerEventArgs> OnGameWinEvent;
 
     private void Awake()
     {
@@ -34,9 +35,19 @@ public class DotsEventsMono : MonoBehaviour
         public int ConnectionId;
     }
 
+    public class OnWinnerEventArgs : EventArgs
+    {
+        public PlayerType Winner;
+    }
+
     public void RaiseOnClientConnectedEvent(int connectionId)
     {
         OnClientConnectedEvent?.Invoke(this, new OnClientConnectedEventArgs { ConnectionId = connectionId });
+    }
+
+    public void RaiseOnGameWinEvent(PlayerType winner)
+    {
+        OnGameWinEvent?.Invoke(this, new OnWinnerEventArgs { Winner = winner });
     }
 
     public void RaiseOnGameStartedEvent()

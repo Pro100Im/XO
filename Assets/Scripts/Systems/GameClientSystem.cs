@@ -1,4 +1,5 @@
 using Components;
+using RPCs;
 using Unity.Burst;
 using Unity.Entities;
 using UnityEngine;
@@ -23,9 +24,14 @@ namespace Systems
 
             foreach(var (gameStartedRPC, entity) in SystemAPI.Query<RefRO<GameStartedRPC>>().WithEntityAccess())
             {
-                Debug.Log("Game started event received on client.");
-
                 DotsEventsMono.Instance.RaiseOnGameStartedEvent();
+
+                entityCommandBuffer.DestroyEntity(entity);
+            }
+
+            foreach (var (gameWinRPC, entity) in SystemAPI.Query<RefRO<GameWinRPC>>().WithEntityAccess())
+            {
+                DotsEventsMono.Instance.RaiseOnGameWinEvent(gameWinRPC.ValueRO.Winner);
 
                 entityCommandBuffer.DestroyEntity(entity);
             }

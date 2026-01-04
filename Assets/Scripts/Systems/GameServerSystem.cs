@@ -6,7 +6,6 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
-using UnityEngine;
 
 [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
 partial struct GameServerSystem : ISystem
@@ -170,19 +169,20 @@ partial struct GameServerSystem : ISystem
         foreach (var line in data.LineArray)
         {
             if (IsWinningLine(
-                data.PlayerTypeArray[GetFlatGridIndex(line.First.x, line.First.y)], 
-                data.PlayerTypeArray[GetFlatGridIndex(line.Second.x, line.Second.y)], 
+                data.PlayerTypeArray[GetFlatGridIndex(line.First.x, line.First.y)],
+                data.PlayerTypeArray[GetFlatGridIndex(line.Second.x, line.Second.y)],
                 data.PlayerTypeArray[GetFlatGridIndex(line.Third.x, line.Third.y)]))
             {
                 gameServerDataCmponent.ValueRW.CurrentPlayablePlayerType = PlayerType.None;
 
+                var gameWinRPC = entityCommandBuffer.CreateEntity();
                 var entityLineWinner = entityCommandBuffer.Instantiate(entitiesReferencesComponent.LineWinnerPrefabEntity);
                 var wordlPos = GetPositionFromGridPos(line.Second.x, line.Second.y);
                 var eluerZ = 0f;
 
                 wordlPos.z = -0.1f;
 
-                switch(line.Orientation)
+                switch (line.Orientation)
                 {
                     case Orientation.Horizontal:
 
@@ -199,8 +199,9 @@ partial struct GameServerSystem : ISystem
                         break;
                 }
 
+                entityCommandBuffer.AddComponent(gameWinRPC, new GameWinRPC { Winner = data.PlayerTypeArray[GetFlatGridIndex(line.First.x, line.First.y)] });
+                entityCommandBuffer.AddComponent(gameWinRPC, new SendRpcCommandRequest());
                 entityCommandBuffer.SetComponent(entityLineWinner, LocalTransform.FromPositionRotation(wordlPos, quaternion.RotateZ(eluerZ * math.TORADIANS)));
-                //entityCommandBuffer.SetComponent(entityLineWinner, new LocalTransform { Position = wordlPos, Rotation = quaternion.RotateZ(eluerZ * math.TORADIANS), Scale = 1f });
             }
         }
     }
