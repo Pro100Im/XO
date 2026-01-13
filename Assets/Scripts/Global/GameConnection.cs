@@ -48,8 +48,8 @@ public class GameConnection
         var match = new MatchmakerOptions
         {
             QueueName = GameManager.Instance.CurrentServicesSettings.MatchmakerTypeRequested == MatchmakerType.Dgs
-                ? "default-queue"
-                : "default-queue",
+                ? "TestXO"
+                : "TestXO",
         };
 
         //LoadingData.Instance.UpdateLoading(LoadingData.LoadingSteps.LookingForMatch);
